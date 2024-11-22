@@ -17,8 +17,10 @@ This project builds an automated disaster management tool using Siamese Neural N
    git clone https://github.com/Chinthansurana/disaster-management-tool.git
    cd disaster-management-tool
 2. Install dependencies:
+    ```bash
     pip install -r requirements.txt
 3. Set up Redis on your machine (for caching or message queue purposes):
     Install Redis from redis.io
     Start Redis server:
-            redis-server
+        ```bash
+        redis-server
