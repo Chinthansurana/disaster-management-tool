@@ -1,52 +1,41 @@
 import torch
-from torch.utils.data import DataLoader, Dataset
-from model import SiameseNetwork, EncoderDecoderDamageDetection
-from data_processing import load_images_from_directory, preprocess_data, create_train_test_split
+import torch.nn as nn
+from utils.config_loader import load_config
+from model import DisasterModel  # Your model class (Siamese, Encoder-Decoder)
+from torch.utils.data import DataLoader
+import os
 
-# Prepare dataset
-images = load_images_from_directory('data/raw')
-images = preprocess_data(images)
-labels = np.random.randint(0, 2, size=(images.shape[0],))  # Placeholder labels
-X_train, X_test, y_train, y_test = create_train_test_split(images, labels)
+# Load config
+config = load_config("config.yaml")
 
-# DataLoader
-class ImageDataset(Dataset):
-    def __init__(self, images, labels):
-        self.images = images
-        self.labels = labels
-    
-    def __len__(self):
-        return len(self.images)
-    
-    def __getitem__(self, idx):
-        return self.images[idx], self.labels[idx]
+# Training parameters
+batch_size = config['training']['batch_size']
+epochs = config['training']['epochs']
+learning_rate = config['training']['learning_rate']
 
-train_loader = DataLoader(ImageDataset(X_train, y_train), batch_size=32, shuffle=True)
-test_loader = DataLoader(ImageDataset(X_test, y_test), batch_size=32)
+# Example model training loop
+def train_model():
+    model = DisasterModel()
+    criterion = nn.CrossEntropyLoss()  # or other loss functions based on your setup
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-# Instantiate models
-siamese_model = SiameseNetwork().cuda()
-encoder_decoder_model = EncoderDecoderDamageDetection().cuda()
+    # Assuming dataset is loaded (use DataLoader with your dataset)
+    train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-# Optimizer and loss
-optimizer = torch.optim.Adam(list(siamese_model.parameters()) + list(encoder_decoder_model.parameters()), lr=0.001)
-criterion = nn.BCEWithLogitsLoss()
+    for epoch in range(epochs):
+        model.train()
+        for batch in train_loader:
+            images, labels = batch
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
 
-# Training loop
-for epoch in range(10):
-    siamese_model.train()
-    encoder_decoder_model.train()
-    for imgs, labels in train_loader:
-        imgs = imgs.cuda()
-        labels = labels.cuda()
-        
-        optimizer.zero_grad()
-        
-        # Forward pass (Siamese + Encoder-Decoder)
-        output = siamese_model(imgs, imgs)  # Dummy pass for now
-        loss = criterion(output, labels.float())
-        
-        loss.backward()
-        optimizer.step()
-    
-    print(f'Epoch {epoch+1}, Loss: {loss.item()}')
+        print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss.item()}")
+
+    # Save the trained model
+    torch.save(model.state_dict(), config['model']['save_path'])
+
+if __name__ == "__main__":
+    train_model()

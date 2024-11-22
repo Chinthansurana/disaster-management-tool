@@ -1,0 +1,52 @@
+# config.yaml
+
+# Paths to dataset directories
+data:
+  raw_images: "data/raw_images/"
+  processed_images: "data/processed_images/"
+  augmented_images: "data/augmented_images/"
+
+# Paths for model and logs
+model:
+  save_path: "models/disaster_model.pth"
+  logs_path: "logs/training_log.txt"
+  
+# Training settings
+training:
+  batch_size: 32
+  epochs: 50
+  learning_rate: 0.001
+  optimizer: "adam"  # Options: 'adam', 'sgd', etc.
+  loss_function: "cross_entropy"  # Options: 'cross_entropy', 'mse', etc.
+  validation_split: 0.2
+  shuffle: true
+  use_gpu: true  # Set to false if using CPU
+
+# Image preprocessing settings
+image_processing:
+  resize_dim: [256, 256]  # Image size to which all images will be resized
+  normalize: true  # Whether to normalize pixel values
+  mean: [0.485, 0.456, 0.406]  # Mean for normalization (ImageNet standard)
+  std: [0.229, 0.224, 0.225]   # Std for normalization (ImageNet standard)
+
+# Augmentation settings
+augmentation:
+  rotation_range: 30  # Maximum degree of rotation
+  width_shift_range: 0.2  # Horizontal shift range
+  height_shift_range: 0.2  # Vertical shift range
+  shear_range: 0.2  # Shear angle in counter-clockwise direction
+  zoom_range: 0.2  # Range for zoom
+  horizontal_flip: true  # Whether to randomly flip images horizontally
+  vertical_flip: false  # Whether to randomly flip images vertically
+
+# Redis configuration
+redis:
+  host: "localhost"
+  port: 6379
+  db: 0
+
+# FastAPI server settings
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4  # Number of workers for FastAPI server

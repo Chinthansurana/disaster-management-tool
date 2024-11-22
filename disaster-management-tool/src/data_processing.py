@@ -1,21 +1,23 @@
-import os
 import cv2
-import numpy as np
-from sklearn.model_selection import train_test_split
+import os
+from utils.config_loader import load_config
 
-def load_images_from_directory(directory, size=(224, 224)):
-    images = []
-    for filename in os.listdir(directory):
-        if filename.endswith('.jpg') or filename.endswith('.png'):
-            img = cv2.imread(os.path.join(directory, filename))
-            img = cv2.resize(img, size)
-            images.append(img)
-    return np.array(images)
+# Load config
+config = load_config("config.yaml")
 
-def preprocess_data(images):
-    # Normalize pixel values between 0 and 1
-    images = images.astype('float32') / 255.0
-    return images
+raw_images_path = config['data']['raw_images']
+processed_images_path = config['data']['processed_images']
+resize_dim = config['image_processing']['resize_dim']
 
-def create_train_test_split(images, labels, test_size=0.2):
-    return train_test_split(images, labels, test_size=test_size, random_state=42)
+# Function to preprocess images (resize and save)
+def preprocess_and_save_image(image_path, save_path):
+    image = cv2.imread(image_path)
+    image = cv2.resize(image, tuple(resize_dim))  # Resize to config dimension
+    cv2.imwrite(save_path, image)
+
+# Process and save images
+os.makedirs(processed_images_path, exist_ok=True)
+for img_file in os.listdir(raw_images_path):
+    img_path = os.path.join(raw_images_path, img_file)
+    save_path = os.path.join(processed_images_path, img_file)
+    preprocess_and_save_image(img_path, save_path)
